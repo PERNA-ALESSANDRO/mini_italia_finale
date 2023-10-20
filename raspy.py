@@ -244,7 +244,7 @@ for idx, d in enumerate(domande):
         print("Regioni indovinate: " + str(g))
         # inp = int(s.read(1))
         ser.reset_input_buffer()
-        inp = int.from_bytes((ser.read(1)))
+        inp = int.from_bytes((ser.read(1)), "little")
         # inp = int.from_bytes(ser.read(1))
 
     fine = tk.Label(window, text="Tutte le regioni indovinate!", font=("Helvatica", 40), fg="green")
