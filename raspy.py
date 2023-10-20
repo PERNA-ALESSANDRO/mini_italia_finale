@@ -1,4 +1,4 @@
-# Analisi sw su Raspberry per Italy4you
+0# Analisi sw su Raspberry per Italy4you
 # protocollo:
 # da Arduino a Raspberry: 1 carattere per ogni pulsante da codice 00000000 a codice 00010100(20)
 # da Raspberry ad Arduino: carattere =risposta GIUSTA 01100011 ('c')  risposta sbagliata 01110111 ('w')
@@ -73,21 +73,55 @@
 # fse
 # fine 
 
-import Tkinter as tk
+import tkinter as tk
 import serial as s
 import time
 from os import *
 import serial.tools.list_ports
+import RPi.GPIO as GPIO
+
+led_rosso = 18
+led_verde = 16
+
+# Dizionario di regioni
+r = {
+    "abruzzo": 30,
+    "basilicata": 31,
+    "calabria": 32,
+    "campania": 33,
+    "emilia": 34,
+    "friuli": 35,
+    "lazio": 36,
+    "liguria": 37,
+    "lombardia": 38,
+    "marche": 39,
+    "molise": 40,
+    "piemonte": 41,
+    "puglia": 42,
+    "sardegna": 43,
+    "sicilia": 44,
+    "toscana": 45,
+    "trentino": 46,
+    "umbria": 47,
+    "aosta": 48,
+    "veneto": 49
+}
+
+GPIO.setmode(GPIO.BOARD)
+
+GPIO.setup(led_rosso, GPIO.OUT)
+GPIO.setup(led_verde, GPIO.OUT)
 
 def pause(text):
     try: 
-        input(text)
+        ser.reset_input_buffer()
+        p = int((ser.read(1)).encode("hex"), 16)
     except: 
         pass
 
 porte = serial.tools.list_ports.comports()
 
-
+# Funzione per aprire la porta di Arduino
 def open_port():
     for port, desc, hwid in porte:
         global ser
@@ -108,7 +142,8 @@ window.resizable(width=False, height=False)
 # PAUSA FINO A INVIO
 def pause(text):
     try: 
-        input(text)
+        #input(text)
+        p = int.from_bytes(ser.read(1))
     except: 
         pass
 
@@ -122,7 +157,23 @@ def change_color(label, color, t = -1):
         label.config(fg=color)
         label.update()
 
+
+
 # CONTROLLA SE INPUT inp E' LA RISPOSTA ALLA DOMANDA d
+# inizio
+#     se inp è una risposta alla domanda d
+#     allora
+#       aggiungi inp a corrette 
+#       incrementa g
+#       ris = true
+#     fse
+# fine
+
+# VARIABILI
+# inp - risposta data in input - intero
+# d - domanda attuale - stringa
+# g - contatore di risposte corrette date - intero
+
 def check(inp, d):
     global g
     global ris
@@ -141,10 +192,12 @@ def check(inp, d):
     change_color(dom, "black")
     return g # Numero di risposte corrette univoche date
 
-open_port()
-domande = ["Pinco?", "Palla? ", "Pippo?", "Pluto?"]
 
-risposte = [[40], [41, 42], [1, 4, 7], [23, 12, 6, 4]]
+
+open_port()
+domande = ["Pinco?", "Palla? ", "Pippo?"]
+
+risposte = [[r["molise"]], [r["piemonte"], r["puglia"]], [r["piemonte"], r["sicilia"], r["molise"]]]
 c = tk.StringVar()
 
 for idx, d in enumerate(domande):
@@ -158,21 +211,41 @@ for idx, d in enumerate(domande):
     dom.pack()
     counter.pack(pady=10)
 
-    inp = int.from_bytes(s.read(1)) # --> Trasformare carattere in arrivo dalla porta seriale in intero
+    inp = int.from_bytes((ser.read(1)), "little") # --> Trasformare carattere in arrivo dalla porta seriale in intero
+    # inp = int.from_bytes(ser.read(1))
     # inp = int(input(d))
     corrette = []
+
+
+    # inizio
+    #     mentre n° risposte corrette date < n° risposte corrette totali
+    #         se risposta data è corretta
+    #         allora 
+    #             accendi led led_verde
+    #         altrimenti
+    #             accendi led led_rosso
+    #     fciclo
+    # fine
 
     while check(inp, idx) < len(risposte[idx]):
         if ris: 
             print("Risposta esatta.")
-            s.write("c".encode("utf-8"))
+            #ser.writ e("c".encode("utf-8"))
+            GPIO.output(led_verde, GPIO.HIGH)
+            time.sleep(1)
+            GPIO.output(led_verde, GPIO.LOW)
         else: 
             print("Risposta errata.")
-            s.write("w".encode("utf-8"))
+            #ser.write("w".encode("utf-8"))
+            GPIO.output(led_rosso, GPIO.HIGH)
+            time.sleep(1)
+            GPIO.output(led_rosso, GPIO.LOW)
         
         print("Regioni indovinate: " + str(g))
         # inp = int(s.read(1))
-        inp = int(input(d))
+        ser.reset_input_buffer()
+        inp = int.from_bytes((ser.read(1)))
+        # inp = int.from_bytes(ser.read(1))
 
     fine = tk.Label(window, text="Tutte le regioni indovinate!", font=("Helvatica", 40), fg="green")
     fine.pack(pady=10)
