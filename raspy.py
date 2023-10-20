@@ -170,9 +170,9 @@ def change_color(label, color, t = -1):
 # fine
 
 # VARIABILI
-# inp - risposta data in input - intero
-# d - domanda attuale - stringa
-# g - contatore di risposte corrette date - intero
+# inp - risposta data in input - intero - PARAMETRO
+# d - domanda attuale - stringa - PARAMETRO
+# g - contatore di risposte corrette date - intero - VALORE DI RITORNO
 
 def check(inp, d):
     global g
@@ -222,8 +222,10 @@ for idx, d in enumerate(domande):
     #         se risposta data è corretta
     #         allora 
     #             accendi led led_verde
+    #             spegni il led dopo un secondo
     #         altrimenti
     #             accendi led led_rosso
+    #             spegni il led dopo un secondo
     #     fciclo
     # fine
 
