@@ -82,9 +82,10 @@ import RPi.GPIO as GPIO
 
 led_rosso = 18
 led_verde = 16
+led_giallo = 22
 
 # Dizionario di regioni
-r = {
+regioni = {
     "abruzzo": 30,
     "basilicata": 31,
     "calabria": 32,
@@ -111,6 +112,7 @@ GPIO.setmode(GPIO.BOARD)
 
 GPIO.setup(led_rosso, GPIO.OUT)
 GPIO.setup(led_verde, GPIO.OUT)
+GPIO.setup(led_giallo, GPIO.OUT)
 
 def pause(text):
     try: 
@@ -121,11 +123,11 @@ def pause(text):
 
 porte = serial.tools.list_ports.comports()
 
-# Funzione per aprire la porta di Arduino
+
 def open_port():
     for port, desc, hwid in porte:
         global ser
-        if "Arduino Mega 2560" in desc:
+        if "ttyACM0" in desc:
             ser = s.Serial(str(port), 9600, bytesize=s.EIGHTBITS)
                 
             break
@@ -157,8 +159,6 @@ def change_color(label, color, t = -1):
         label.config(fg=color)
         label.update()
 
-
-
 # CONTROLLA SE INPUT inp E' LA RISPOSTA ALLA DOMANDA d
 # inizio
 #     se inp è una risposta alla domanda d
@@ -170,9 +170,9 @@ def change_color(label, color, t = -1):
 # fine
 
 # VARIABILI
-# inp - risposta data in input - intero - PARAMETRO
-# d - domanda attuale - stringa - PARAMETRO
-# g - contatore di risposte corrette date - intero - VALORE DI RITORNO
+# inp - risposta data in input - intero 
+# d - domanda attuale - stringa
+# g - contatore di risposte corrette date - intero
 
 def check(inp, d):
     global g
@@ -184,20 +184,18 @@ def check(inp, d):
         g += 1
         c.set("{}/{} risposte indovinate.".format(g, len(risposte[idx])))
         ris = True
-        change_color(dom, "green", 1)
+        change_color(dom, "green")
     elif inp in corrette:
-        change_color(dom, "gold", 1)
+        change_color(dom, "gold")
     else:
-        change_color(dom, "red", 1)
-    change_color(dom, "black")
+        change_color(dom, "red")
+
     return g # Numero di risposte corrette univoche date
 
-
-
 open_port()
-domande = ["Pinco?", "Palla? ", "Pippo?"]
+domande = ["avvio", "Pinco?", "Palla? ", "Pippo?", "Pluto?"]
 
-risposte = [[r["molise"]], [r["piemonte"], r["puglia"]], [r["piemonte"], r["sicilia"], r["molise"]]]
+risposte = [[regioni["molise"]], [regioni["piemonte"], regioni["puglia"]], [regioni["piemonte"], regioni["sicilia"], regioni["molise"]]]
 c = tk.StringVar()
 
 for idx, d in enumerate(domande):
@@ -208,27 +206,35 @@ for idx, d in enumerate(domande):
     dom = tk.Label(window, text=d, font=("Helvatica", 30), anchor='center')
     counter = tk.Label(window, textvariable=c, font=("Helvatica", 25))
     
+    
+    """
+    start = 0
+    while start != 43:
+        start = int.from_bytes((ser.read(1)), "little")
+        if start == 43:
+            GPIO.output(led_giallo, GPIO.HIGH)
+            time.sleep(1)
+            GPIO.output(led_giallo, GPIO.LOW)
+    """     
     dom.pack()
     counter.pack(pady=10)
 
+    ser.reset_input_buffer()
     inp = int.from_bytes((ser.read(1)), "little") # --> Trasformare carattere in arrivo dalla porta seriale in intero
-    # inp = int.from_bytes(ser.read(1))
+    #inp = int.from_bytes(ser.read(1))
     # inp = int(input(d))
     corrette = []
-
-
+    
     # inizio
     #     mentre n° risposte corrette date < n° risposte corrette totali
     #         se risposta data è corretta
     #         allora 
     #             accendi led led_verde
-    #             spegni il led dopo un secondo
     #         altrimenti
     #             accendi led led_rosso
-    #             spegni il led dopo un secondo
     #     fciclo
     # fine
-
+    
     while check(inp, idx) < len(risposte[idx]):
         if ris: 
             print("Risposta esatta.")
@@ -243,18 +249,23 @@ for idx, d in enumerate(domande):
             time.sleep(1)
             GPIO.output(led_rosso, GPIO.LOW)
         
+        change_color(dom, "black")
         print("Regioni indovinate: " + str(g))
         # inp = int(s.read(1))
         ser.reset_input_buffer()
         inp = int.from_bytes((ser.read(1)), "little")
-        # inp = int.from_bytes(ser.read(1))
+        #inp = int.from_bytes(ser.read(1))
 
+    
+    
+
+    GPIO.output(led_verde, GPIO.HIGH)
     fine = tk.Label(window, text="Tutte le regioni indovinate!", font=("Helvatica", 40), fg="green")
     fine.pack(pady=10)
-
     print("Tutte le regioni indovinate!")
-    pause("Premere invio per continuare...")
-    system("cls")
+    time.sleep(2)
+    GPIO.output(led_verde, GPIO.LOW)
+    system("clear")
     
     dom.destroy()
     counter.destroy()
