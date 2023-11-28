@@ -86,26 +86,27 @@ led_giallo = 22
 
 # Dizionario di regioni
 regioni = {
-    "abruzzo": 30,
-    "basilicata": 31,
-    "calabria": 32,
-    "campania": 33,
-    "emilia": 34,
-    "friuli": 35,
-    "lazio": 36,
-    "liguria": 37,
-    "lombardia": 38,
-    "marche": 39,
-    "molise": 40,
-    "piemonte": 41,
-    "puglia": 42,
-    "sardegna": 43,
-    "sicilia": 44,
-    "toscana": 45,
-    "trentino": 46,
-    "umbria": 47,
-    "aosta": 48,
-    "veneto": 49
+    "abruzzo": 30, #M
+    "basilicata": 31, #R
+    "calabria": 32, #S
+    "campania": 33, #P
+    "emilia": 34, #H
+    "friuli": 35,   #F
+    "lazio": 36, #K
+    "liguria": 37, #G
+    "lombardia": 38, #C
+    "marche": 39,   #L
+    "molise": 40,   #N
+    "piemonte": 41, #B
+    "puglia": 42,   #Q
+    "sardegna": 43, #T
+    "sicilia": 44, #U
+    "toscana": 45, #I
+    "trentino": 46, #G
+    "umbria": 47, #J
+    "aosta": 48, #A
+    "veneto": 49, #E
+    "vaticano": 50 #O
 }
 
 GPIO.setmode(GPIO.BOARD)
